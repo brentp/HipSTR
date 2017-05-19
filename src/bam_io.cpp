@@ -2,6 +2,7 @@
 
 #include "bam_io.h"
 #include "error.h"
+#include <err.h>
 #include "stringops.h"
 
 void BamAlignment::ExtractSequenceFields(){
@@ -90,10 +91,14 @@ bool BamCramReader::SetRegion(const std::string& chrom, int32_t start, int32_t e
 
 bool BamCramReader::GetNextAlignment(BamAlignment& aln){
   if (iter_ == NULL) return false;
+  int ret;
 
-  if (sam_itr_next(in_, iter_, aln.b_) < 0){
+  if (ret = sam_itr_next(in_, iter_, aln.b_) < 0){
     hts_itr_destroy(iter_);
     iter_ = NULL;
+    if (ret < -1){
+        errx(3, "error reading file%s\n", aln.file_.c_str());
+    }
     return false;
   }
 
